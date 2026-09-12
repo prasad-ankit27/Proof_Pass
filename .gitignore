@@ -1,0 +1,17 @@
+node_modules/
+dist/
+frontend/dist/
+logs/
+.env.preprod
+.env.preview
+*.log
+midnight-level-db/
+compactc_linux/
+*.zip
+err_*.log
+out_*.log
+
+# DO NOT ignore — these must be committed:
+# frontend/src/managed/    <- TypeScript contract types for React
+# frontend/public/managed/ <- ZK proving keys served at /managed/
+
