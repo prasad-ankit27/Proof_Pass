@@ -1,0 +1,52 @@
+pragma language_version >= 0.22;
+import CompactStandardLibrary;
+
+export ledger threshold: Uint<32>;
+export ledger admin: Bytes<32>;
+export ledger nullifiers: Set<Bytes<32>>;
+export ledger deadline: Uint<64>;
+export ledger is_active: Boolean;
+export ledger total_verified: Uint<32>;
+export ledger max_claims: Uint<32>;
+
+struct UserCreds { score: Uint<32>, user_id: Bytes<32> }
+witness user_creds(): UserCreds;
+witness admin_secret(): Bytes<32>;
+
+constructor(initial_threshold: Uint<32>, admin_hash: Bytes<32>, expiry: Uint<64>, claim_limit: Uint<32>) {
+    threshold = disclose(initial_threshold);
+    admin = disclose(admin_hash);
+    deadline = disclose(expiry);
+    max_claims = disclose(claim_limit);
+    is_active = disclose(true);
+    total_verified = disclose(0);
+}
+
+export circuit verify_and_record(): [] {
+    assert(disclose(is_active), "Contract is paused");
+    assert(blockTimeLt(disclose(deadline)), "Deadline passed");
+    assert(disclose(total_verified) < disclose(max_claims), "Cap reached");
+    const creds = user_creds();
+    assert(creds.score >= threshold, "Score below threshold");
+    const nul = make_nullifier(creds.user_id);
+    assert(!nullifiers.member(disclose(nul)), "Already verified");
+    nullifiers.insert(disclose(nul));
+    total_verified = disclose((total_verified + 1) as Uint<32>);
+}
+
+export circuit update_config(new_threshold: Uint<32>, new_deadline: Uint<64>, new_max: Uint<32>, active: Boolean): [] {
+    const sk = admin_secret();
+    assert(admin == admin_public_key(sk), "Not authorized");
+    threshold = disclose(new_threshold);
+    deadline = disclose(new_deadline);
+    max_claims = disclose(new_max);
+    is_active = disclose(active);
+}
+
+export pure circuit admin_public_key(sk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "myapp:admin:v1"), sk]);
+}
+
+export pure circuit make_nullifier(user_id: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "myapp:nullifier:v1"), user_id]);
+}
