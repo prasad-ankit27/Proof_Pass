@@ -1,0 +1,148 @@
+pragma language_version >= 0.22;
+import CompactStandardLibrary;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PUBLIC LEDGER STATE (visible on-chain by any observer)
+// ──────────────────────────────────────────────────────────────────────────────
+
+// Admin authentication — stores HASH of admin secret, not the secret itself
+export ledger admin: Bytes<32>;
+
+// Credential issuer hash — identifies which institution issued credentials
+export ledger credential_issuer: Bytes<32>;
+
+// Eligibility thresholds (public — recruiters set & see these)
+// CGPA stored as Uint<32> scaled by 10 (e.g. 8.0 → 80)
+export ledger min_cgpa: Uint<32>;
+export ledger min_projects: Uint<32>;
+export ledger requires_python: Boolean;
+
+// Contract lifecycle
+export ledger deadline: Uint<64>;    // Unix timestamp
+export ledger is_active: Boolean;
+export ledger max_claims: Uint<32>;
+
+// Aggregate stats (visible — recruiters see total proofs)
+export ledger total_verified: Uint<32>;
+
+// Nullifier set — prevents a student from proving eligibility twice
+export ledger nullifiers: Set<Bytes<32>>;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PRIVATE WITNESSES (never go on-chain — stay inside ZK proof only)
+// ──────────────────────────────────────────────────────────────────────────────
+
+struct StudentCredentials {
+    cgpa: Uint<32>,          // Actual CGPA × 10 (e.g. 8.47 → 84)
+    project_count: Uint<32>, // Number of completed projects
+    has_python: Boolean,     // Python proficiency flag
+    student_id: Bytes<32>    // Unique student identifier (for nullifier)
+}
+
+witness student_credentials(): StudentCredentials;
+witness admin_secret(): Bytes<32>;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// CONSTRUCTOR (called ONCE at deploy time by the recruiter/admin)
+// ──────────────────────────────────────────────────────────────────────────────
+
+constructor(
+    admin_hash: Bytes<32>,
+    issuer_hash: Bytes<32>,
+    threshold_cgpa: Uint<32>,
+    threshold_projects: Uint<32>,
+    python_required: Boolean,
+    expiry: Uint<64>,
+    claim_limit: Uint<32>
+) {
+    admin = disclose(admin_hash);
+    credential_issuer = disclose(issuer_hash);
+    min_cgpa = disclose(threshold_cgpa);
+    min_projects = disclose(threshold_projects);
+    requires_python = disclose(python_required);
+    deadline = disclose(expiry);
+    max_claims = disclose(claim_limit);
+    is_active = disclose(true);
+    total_verified = disclose(0);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// STUDENT CIRCUIT — The core ZK circuit
+// The student proves they meet all requirements WITHOUT revealing actual values
+// ──────────────────────────────────────────────────────────────────────────────
+
+export circuit verify_eligibility(): [] {
+    // ── Check public state pre-conditions ──────────────────────────────────
+    assert(disclose(is_active), "Contract is paused");
+    assert(blockTimeLt(disclose(deadline)), "Application deadline has passed");
+    assert(disclose(total_verified) < disclose(max_claims), "Maximum verifications reached");
+
+    // ── Read private witness data (NEVER disclosed) ──────────────────────
+    const creds = student_credentials();
+
+    // ── Assert private conditions (proof fails if any are false) ─────────
+    // The student proves CGPA >= min_cgpa WITHOUT revealing their actual CGPA
+    assert(creds.cgpa >= min_cgpa, "CGPA below required threshold");
+
+    // The student proves project count >= min_projects without revealing exact count
+    assert(creds.project_count >= min_projects, "Insufficient project count");
+
+    // The student proves Python proficiency if required
+    assert(!disclose(requires_python) || creds.has_python, "Python proficiency required");
+
+    // ── Nullifier — prevents the same student from claiming twice ─────────
+    // The nullifier is derived from student_id — it's publicly recorded but
+    // an observer CANNOT reverse it to learn who the student is
+    const nul = make_nullifier(creds.student_id);
+    assert(!nullifiers.member(disclose(nul)), "Already verified — cannot claim twice");
+
+    // ── Write public ledger state ──────────────────────────────────────────
+    nullifiers.insert(disclose(nul));
+    total_verified = disclose((total_verified + 1) as Uint<32>);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ADMIN CIRCUIT — Recruiter/admin can update requirements
+// Uses ZK auth: admin proves they know the secret key that hashes to admin
+// ──────────────────────────────────────────────────────────────────────────────
+
+export circuit update_requirements(
+    new_cgpa: Uint<32>,
+    new_projects: Uint<32>,
+    python_req: Boolean,
+    new_deadline: Uint<64>,
+    new_max: Uint<32>,
+    active: Boolean
+): [] {
+    // Admin authentication via ZK — secret key never revealed
+    const sk = admin_secret();
+    assert(admin == admin_public_key(sk), "Not authorized — admin key mismatch");
+
+    min_cgpa = disclose(new_cgpa);
+    min_projects = disclose(new_projects);
+    requires_python = disclose(python_req);
+    deadline = disclose(new_deadline);
+    max_claims = disclose(new_max);
+    is_active = disclose(active);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PURE CIRCUITS — Utility functions (MUST be exported for TypeScript access)
+// ──────────────────────────────────────────────────────────────────────────────
+
+// Derives the admin's public key from their secret key
+// Domain separator prevents hash collisions between different uses
+export pure circuit admin_public_key(sk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "proofpass:admin:v1"), sk]);
+}
+
+// Derives a nullifier from a student's ID
+// The nullifier is publicly recorded but the preimage (student_id) stays private
+export pure circuit make_nullifier(student_id: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "proofpass:nullifier:v1"), student_id]);
+}
+
+// Derives a credential issuer hash from a string identifier
+export pure circuit make_issuer_hash(issuer_id: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "proofpass:issuer:v1"), issuer_id]);
+}
