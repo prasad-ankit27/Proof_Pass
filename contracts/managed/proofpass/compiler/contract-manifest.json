@@ -1,0 +1,78 @@
+{
+  "manifest-version": "1",
+  "compiler-version": "0.34.0",
+  "language-version": "0.26.0",
+  "runtime-version": "0.19.0",
+  "compiler": {
+    "type": "directory",
+    "contract-info.json": {
+      "type": "file",
+      "size": 5296,
+      "hash": "b23d0c2e04300ecc1cdae4f13ab7aebb6ddb0e5f539f6fa3187f70a5d3e84368"
+    }
+  },
+  "contract": {
+    "type": "directory",
+    "index.d.ts": {
+      "type": "file",
+      "size": 4442,
+      "hash": "634a2d388cf121f5e22372e80397d4277225d63f397ed6276fdcee9a6494f8e0"
+    },
+    "index.js": {
+      "type": "file",
+      "size": 85208,
+      "hash": "2bd8aa512c71240f23bec84181a55f9678fc79daad8266e3b84125b0e9aa09aa"
+    },
+    "index.js.map": {
+      "type": "file",
+      "size": 3211,
+      "hash": "0cff699bcfe65604617b2745cc3be9d6c9301d4d3c441538c4c57455f2e80309"
+    }
+  },
+  "zkir": {
+    "type": "directory",
+    "update_requirements.bzkir": {
+      "type": "file",
+      "size": 372,
+      "hash": "7af1813073cbf111a02a001e685b79848be5907ffdf07299631ffea389ee7d6e"
+    },
+    "update_requirements.zkir": {
+      "type": "file",
+      "size": 6287,
+      "hash": "286e34f76097d28b2568ae70cbe558e16f808b16e04906ce8ad1ad52e3e715d0"
+    },
+    "verify_eligibility.bzkir": {
+      "type": "file",
+      "size": 630,
+      "hash": "087e78719d6f79ce30d06e9de97905ef76de8bc6592625eea581600d0e9e8e1b"
+    },
+    "verify_eligibility.zkir": {
+      "type": "file",
+      "size": 10858,
+      "hash": "b666c1b38c79d950e878f9d14e248b9e0afe854f232357883da1154264d5d0b5"
+    }
+  },
+  "keys": {
+    "type": "directory",
+    "update_requirements.prover": {
+      "type": "file",
+      "size": 2820547,
+      "hash": "7f870419c56913f8e13d5695b892bf8e0db5b5fd510c8abb7583be112899057d"
+    },
+    "update_requirements.verifier": {
+      "type": "file",
+      "size": 2119,
+      "hash": "60a804ff2d670d7f1a3e64095659b2e58e0f4c3cb921147dd4ae91ee7fcb1376"
+    },
+    "verify_eligibility.prover": {
+      "type": "file",
+      "size": 2821336,
+      "hash": "774647ae929370d2cba2e70056c23ab0fbcae40d6b5bc5dd6ba3fae0588e5a0a"
+    },
+    "verify_eligibility.verifier": {
+      "type": "file",
+      "size": 2119,
+      "hash": "b16ffd7bdfd04220535fa587ab056a0c7523bb9581cb9322cd494b1fb9ceb692"
+    }
+  }
+}
