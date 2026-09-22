@@ -1,9 +1,13 @@
 # ProofPass — Private Skill Passport
 
-[![CI](https://github.com/YOUR_USERNAME/ProofPass/actions/workflows/ci.yaml/badge.svg)](https://github.com/YOUR_USERNAME/ProofPass/actions/workflows/ci.yaml)
+[![CI](https://github.com/prasad-ankit27/Proof_Pass/actions/workflows/ci.yaml/badge.svg)](https://github.com/prasad-ankit27/Proof_Pass/actions/workflows/ci.yaml)
+[![Netlify](https://img.shields.io/badge/Netlify-Deployed-00AD9F?style=flat&logo=netlify&logoColor=white)](https://proofpass.netlify.app/)
+[![Midnight](https://img.shields.io/badge/Midnight-Preprod-00E5FF?style=flat)](https://preprod.midnightexplorer.com/contracts/dbb45e8ac051c39ae6cef7edeef391b309d3b0459d475b26af07bd9a3aa11a78)
 
 > **Prove you meet the requirements. Keep your credentials private.**
 > A Zero-Knowledge credential verification dApp built on the Midnight Network.
+
+🌐 **Live Application**: [https://proofpass.netlify.app/](https://proofpass.netlify.app/)
 
 ## 🌙 What is ProofPass?
 
@@ -37,6 +41,7 @@ Each student is assigned a private `student_id`. This ID is hashed into an anony
 
 ## 🚀 Live Demo & Deployment
 
+- **Live Application**: [https://proofpass.netlify.app/](https://proofpass.netlify.app/)
 - **Network**: Midnight Preprod
 - **Contract Address**: `dbb45e8ac051c39ae6cef7edeef391b309d3b0459d475b26af07bd9a3aa11a78`
 - **Deployment Transaction**: [`dc3a8e2f372e88be9104bb212ae8c17322334f8d839cb27b712d9035e82a5b5c`](https://explorer.1am.xyz/tx/dc3a8e2f372e88be9104bb212ae8c17322334f8d839cb27b712d9035e82a5b5c?network=preprod)
