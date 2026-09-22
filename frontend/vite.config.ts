@@ -4,7 +4,10 @@ import topLevelAwait from 'vite-plugin-top-level-await';
 import wasm from 'vite-plugin-wasm';
 
 export default defineConfig({
-  plugins: [react(), wasm(), topLevelAwait()],
+  plugins: [react(), wasm()],
+  build: {
+    target: 'esnext',
+  },
   resolve: {
     dedupe: [
       '@midnight-ntwrk/onchain-runtime-v3',
