@@ -16,7 +16,8 @@
                     "env:up":  "docker compose up -d --wait",
                     "env:down":  "docker compose down",
                     "copy:managed":  "xcopy /E /I /Y contracts\\managed\\proofpass\\contract frontend\\src\\managed\\contract \u0026\u0026 xcopy /E /I /Y contracts\\managed\\proofpass frontend\\public\\managed",
-                    "test:unit":  "vitest run src/test/contract.unit.test.ts"
+                    "test:unit":  "vitest run src/test/contract.unit.test.ts",
+                    "verify:env":  "tsx scripts/verify-local.ts"
                 },
     "dependencies":  {
                          "@midnight-ntwrk/midnight-js-contracts":  "4.1.1",
