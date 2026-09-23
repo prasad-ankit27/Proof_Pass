@@ -29,10 +29,22 @@ type ContractState = {
   max_claims: bigint;
 } | null;
 
-function getCompiledContract() {
+function getCompiledContract(witnesses?: any) {
   if (!Contract) throw new Error('Contract not compiled. Run yarn compile and yarn copy:managed first.');
   return CompiledContract.make('ProofPass', Contract).pipe(
-    CompiledContract.withVacantWitnesses,
+    CompiledContract.withWitnesses({
+      student_credentials: (context: any) => [
+        context?.privateState,
+        {
+          cgpa: 0n,
+          project_count: 0n,
+          has_python: false,
+          student_id: new Uint8Array(32),
+        },
+      ],
+      admin_secret: (context: any) => [context?.privateState, new Uint8Array(32)],
+      ...witnesses,
+    }),
     CompiledContract.withCompiledFileAssets(new URL('/managed', window.location.origin).toString()),
   ) as any;
 }
@@ -112,19 +124,23 @@ export default function StudentPage() {
         studentIdBytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
       }
 
-      const callTxData = await createUnprovenCallTx(session.providers as any, {
-        compiledContract: getCompiledContract(),
-        contractAddress,
-        circuitId: 'verify_eligibility',
-        witnesses: {
-          // PRIVATE: these values are NEVER sent to the blockchain
-          student_credentials: () => ({
+      const compiledContract = getCompiledContract({
+        student_credentials: (context: any) => [
+          context?.privateState,
+          {
             cgpa: cgpaInt,
             project_count: projectsInt,
             has_python: hasPython,
             student_id: studentIdBytes,
-          }),
-        },
+          },
+        ],
+        admin_secret: (context: any) => [context?.privateState, new Uint8Array(32)],
+      });
+
+      const callTxData = await createUnprovenCallTx(session.providers as any, {
+        compiledContract,
+        contractAddress,
+        circuitId: 'verify_eligibility',
         args: [],
       });
 

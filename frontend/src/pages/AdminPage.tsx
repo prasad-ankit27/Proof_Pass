@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useWallet } from '../contexts/WalletContext';
 import { createPatchedPublicDataProvider } from '../lib/midnight';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
-import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
+import { createUnprovenDeployTx, submitTxAsync } from '@midnight-ntwrk/midnight-js-contracts';
 import { sampleSigningKey } from '@midnight-ntwrk/compact-runtime';
 import { waitForContractDeployment } from '../lib/midnight';
 
@@ -47,13 +47,17 @@ export default function AdminPage() {
   // Deploy state
   const [deployStatus, setDeployStatus] = useState<DeployStatus>('idle');
   const [deployedAddress, setDeployedAddress] = useState<string | null>(null);
+  const [pastedAddress, setPastedAddress] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   // Load any previously deployed address
   useEffect(() => {
     const saved = localStorage.getItem('DEPLOYED_CONTRACT_ADDRESS');
-    if (saved) setDeployedAddress(saved);
+    if (saved) {
+      setDeployedAddress(saved);
+      setDeployStatus('deployed');
+    }
   }, []);
 
   // Generate a random admin secret
@@ -96,14 +100,22 @@ export default function AdminPage() {
       const projects = BigInt(parseInt(projectsThreshold, 10));
       const maxCl = BigInt(parseInt(maxClaims, 10));
 
-      const deployed = await deployContract(session.providers as any, {
+      const deployTxData = await createUnprovenDeployTx(session.providers as any, {
         compiledContract,
         args: [adminHash, issuerHash, cgpa, projects, pythonRequired, deadline, maxCl],
         privateStateId: 'AdminDeployState',
         initialPrivateState: {},
       });
 
-      const contractAddress = deployed.deployTxData.public.contractAddress;
+      const contractAddress = deployTxData.public.contractAddress;
+
+      await submitTxAsync(session.providers as any, {
+        unprovenTx: deployTxData.private.unprovenTx,
+      });
+
+      session.providers.privateStateProvider.setContractAddress(contractAddress);
+      await session.providers.privateStateProvider.set('AdminDeployState', deployTxData.private.initialPrivateState);
+      await session.providers.privateStateProvider.setSigningKey(contractAddress, deployTxData.private.signingKey);
 
       setDeployStatus('waiting');
 
@@ -362,8 +374,8 @@ export default function AdminPage() {
                 {[
                   { label: 'Generate admin key', done: !!adminSecret },
                   { label: 'Set requirements', done: true },
-                  { label: 'Connect wallet & deploy', done: deployStatus === 'deployed' || deployStatus === 'waiting' },
-                  { label: 'Share contract address', done: deployStatus === 'deployed' },
+                  { label: 'Connect wallet & deploy', done: deployStatus === 'deployed' || deployStatus === 'waiting' || !!deployedAddress },
+                  { label: 'Share contract address', done: deployStatus === 'deployed' || !!deployedAddress },
                 ].map((step, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 0', borderBottom: i < 3 ? '1px solid var(--border-default)' : 'none' }}>
                     <div style={{
@@ -383,9 +395,54 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {!deployedAddress && (
+              <div className="glass-panel">
+                <p className="heading-md" style={{ marginBottom: 8, fontSize: '0.9rem' }}>🔗 Link Deployed Contract</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: 10 }}>
+                  Already deployed via 1AM Explorer or CLI? Paste address here:
+                </p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    className="form-input form-input-mono"
+                    style={{ fontSize: '0.78rem', padding: '6px 10px' }}
+                    placeholder="Enter contract address..."
+                    value={pastedAddress}
+                    onChange={e => setPastedAddress(e.target.value)}
+                  />
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    style={{ flexShrink: 0 }}
+                    onClick={() => {
+                      if (pastedAddress.trim()) {
+                        const addr = pastedAddress.trim();
+                        setDeployedAddress(addr);
+                        localStorage.setItem('DEPLOYED_CONTRACT_ADDRESS', addr);
+                        setDeployStatus('deployed');
+                      }
+                    }}
+                  >
+                    Set
+                  </button>
+                </div>
+              </div>
+            )}
+
             {deployedAddress && (
               <div className="glass-panel">
-                <p className="heading-md" style={{ marginBottom: 12, fontSize: '0.95rem' }}>📍 Active Contract</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <p className="heading-md" style={{ fontSize: '0.95rem', margin: 0 }}>📍 Active Contract</p>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '0.72rem', padding: '2px 8px' }}
+                    onClick={() => {
+                      setDeployedAddress(null);
+                      localStorage.removeItem('DEPLOYED_CONTRACT_ADDRESS');
+                      setDeployStatus('idle');
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
                 <div style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', wordBreak: 'break-all', marginBottom: 12 }}>
                   {deployedAddress}
                 </div>
