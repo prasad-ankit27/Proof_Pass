@@ -8,6 +8,11 @@
 > A Zero-Knowledge credential verification dApp built on the Midnight Network.
 
 🌐 **Live Application**: [https://proofpass.netlify.app/](https://proofpass.netlify.app/)
+🎥 **Demo Video**: [Watch on Google Drive](https://drive.google.com/file/d/1TZr6_D3N10vfaWdfvIOy57r1wpFZ2OGl/view?usp=sharing)
+
+<p align="center">
+  <img src="./User_interface/Screenshot%202026-09-23%20124216.png" alt="ProofPass Hero Banner" width="100%">
+</p>
 
 ## 🌙 What is ProofPass?
 
@@ -42,11 +47,41 @@ Each student is assigned a private `student_id`. This ID is hashed into an anony
 ## 🚀 Live Demo & Deployment
 
 - **Live Application**: [https://proofpass.netlify.app/](https://proofpass.netlify.app/)
+- **Demo Video**: [Watch Demo](https://drive.google.com/file/d/1TZr6_D3N10vfaWdfvIOy57r1wpFZ2OGl/view?usp=sharing)
 - **Network**: Midnight Preprod
 - **Contract Address**: `dbb45e8ac051c39ae6cef7edeef391b309d3b0459d475b26af07bd9a3aa11a78`
 - **Deployment Transaction**: [`dc3a8e2f372e88be9104bb212ae8c17322334f8d839cb27b712d9035e82a5b5c`](https://explorer.1am.xyz/tx/dc3a8e2f372e88be9104bb212ae8c17322334f8d839cb27b712d9035e82a5b5c?network=preprod)
 - **1AM Explorer**: https://explorer.1am.xyz/tx/dc3a8e2f372e88be9104bb212ae8c17322334f8d839cb27b712d9035e82a5b5c?network=preprod
 - **Midnight Explorer**: https://preprod.midnightexplorer.com/contracts/dbb45e8ac051c39ae6cef7edeef391b309d3b0459d475b26af07bd9a3aa11a78
+
+---
+
+## 📸 Screenshots & User Interface
+
+### 1. Privacy Comparison — What the Recruiter Actually Sees
+*Demonstrating how private credentials stay client-side while only the cryptographic proof is verified on-chain.*
+
+![Privacy Comparison](./User_interface/Screenshot%202026-09-23%20234925.png)
+
+---
+
+### 2. Student Portal — Generate Zero-Knowledge Proof
+*Students enter their private credentials (CGPA, projects, certifications) and generate a proof with an anonymous nullifier without revealing private data.*
+
+![Student Portal](./User_interface/Screenshot%202026-09-23%20234803.png)
+
+---
+
+### 3. Recruiter Admin Portal — Requirement Configuration & Deployment
+*Recruiters set eligibility criteria (minimum CGPA, project threshold, skill requirements, deadline) and deploy the smart contract directly to Midnight Preprod.*
+
+<p align="center">
+  <img src="./User_interface/Screenshot%202026-09-23%20234627.png" alt="Recruiter Admin Setup" width="100%">
+</p>
+
+<p align="center">
+  <img src="./User_interface/Screenshot%202026-09-23%20234644.png" alt="Recruiter Admin Deployment" width="100%">
+</p>
 
 ---
 
