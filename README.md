@@ -34,6 +34,7 @@ ProofPass is a decentralized application (dApp) engineered on the **Midnight Net
 
 ## Official Submission Links
 
+- **Product Idea Submission:** [`PROPOSAL.md`](PROPOSAL.md)
 - **Live Application (Netlify):** [https://proofpass.netlify.app/](https://proofpass.netlify.app/)
 - **Deployed Contract (Midnight Preprod):** [`dbb45e8ac051c39ae6cef7edeef391b309d3b0459d475b26af07bd9a3aa11a78`](https://preprod.midnightexplorer.com/contracts/dbb45e8ac051c39ae6cef7edeef391b309d3b0459d475b26af07bd9a3aa11a78)
 - **Deployment Transaction (1AM Explorer):** [`dc3a8e2f372e88be9104bb212ae8c17322334f8d839cb27b712d9035e82a5b5c`](https://explorer.1am.xyz/tx/dc3a8e2f372e88be9104bb212ae8c17322334f8d839cb27b712d9035e82a5b5c?network=preprod)
